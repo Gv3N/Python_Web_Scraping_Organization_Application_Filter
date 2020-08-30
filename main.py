@@ -15,8 +15,8 @@ driver = webdriver.Chrome()
 driver.get("https://auth.uum.edu.my/nidp/idff/sso?id=3&sid=0&option=credential&sid=0&target=https://portal.uum.edu.my/")
 
 # get the elements from the website
-username_textbox = driver.find_element_by_name("Ecom_User_ID").send_keys("b_pillay_kanegekumar")
-password_textbox = driver.find_element_by_name("Ecom_Password").send_keys("Jeevan98")
+username_textbox = driver.find_element_by_name("Ecom_User_ID").send_keys("xxx")
+password_textbox = driver.find_element_by_name("Ecom_Password").send_keys("xxx")
 
 login_btn = driver.find_element_by_name("B1").submit()
 
