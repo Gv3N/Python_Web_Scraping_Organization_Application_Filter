@@ -1,4 +1,5 @@
 # automated data parse from UUM Job list
+
 import time
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
@@ -6,8 +7,8 @@ from bs4 import BeautifulSoup as bs
 import pandas as pd
 
 # credentials as input as different people can use this system
-# username = input("Enter in your username:")
-# password = input("Enter in your password:")
+username = input("Enter in your username:")
+password = input("Enter in your password:")
 
 
 driver = webdriver.Chrome()
@@ -15,8 +16,8 @@ driver = webdriver.Chrome()
 driver.get("https://auth.uum.edu.my/nidp/idff/sso?id=3&sid=0&option=credential&sid=0&target=https://portal.uum.edu.my/")
 
 # get the elements from the website
-username_textbox = driver.find_element_by_name("Ecom_User_ID").send_keys("b_pillay_kanegekumar")
-password_textbox = driver.find_element_by_name("Ecom_Password").send_keys("Jeevan98")
+username_textbox = driver.find_element_by_name("Ecom_User_ID").send_keys(username)
+password_textbox = driver.find_element_by_name("Ecom_Password").send_keys(password)
 
 login_btn = driver.find_element_by_name("B1").submit()
 
@@ -49,58 +50,48 @@ time.sleep(5)
 # id city drop down => ContentPlaceHolder1_MainContent_ddlbandar
 # testing kedah, id=[02] -> alor setar, id=[0202] -> 1020 rows, 55 pages
 # url for the table, 'https://portal5.uum.edu.my/webasis/practis/student/orga_list.aspx'
+# Part 1 done-----------------------------------------------------------------------------------------------------------
 
 # send current driver url to bs4 & parse all the data
-
-
-def parse_content(table):
-    n_columns = 0
-    n_rows = 0
-    column_names = []
-
-    # Find number of rows and columns
-    # we also find the column titles if we can
-    for row in table.find_all('tr'):
-        # n_rows += 1
-        # Determine the number of rows in the table
-        td_tags = row.find_all('td')
-        if len(td_tags) > 0:
-            n_rows += 1
-        if n_columns == 0:
-            # Set the number of columns for our table
-            n_columns = len(td_tags)
-
-        # Handle column names if we find them
-        th_tags = row.find_all('th')
-        if len(th_tags) > 0 and len(column_names) == 0:
-            for th in th_tags:
-                column_names.append(th.get_text())
-
-        # Safeguard on Column Titles
-        if len(column_names) > 0 and len(column_names) != n_columns:
-            raise Exception("Column titles do not match the number of columns")
-
-        columns = column_names if len(column_names) > 0 else range(0, n_columns)
-        df = pd.DataFrame(columns=columns,
-                          index=range(0, n_rows))
-        row_marker = 0
-        for row in table.find_all('tr'):
-            column_marker = 0
-        columns = row.find_all('td')
-        for column in columns:
-            df.iat[row_marker, column_marker] = column.get_text()
-            column_marker += 1
-        if len(columns) > 0:
-            row_marker += 1
-    return df
-
-
 html_doc = driver.page_source
-# driver.close()
+
 soup = bs(html_doc, 'lxml')
 table = soup.find("table", attrs={"id": "ContentPlaceHolder1_MainContent_GridView1"})
-parse_content(table)
+table_rows = table.find_all("tr")
+driver.close()
 
+# get all the heading of lists
+# get header of table
+headings = []
+for th in table_rows[0].find_all("th"):
+    headings.append(th.get_text())
+# print(headings)
+# print(table_data)
+
+# get all the rows of table
+table_data = []
+limit = 21  # create limit to rows per page as there is excess rows, there will be one empty row from the header.
+index = 0  # index counter
+for tr in table_rows:
+    td = tr.find_all('td')
+    row = [tr.get_text().strip('\n, " "') for tr in td]
+    # print(row)
+    table_data.append(row)
+    index += 1
+    if index == limit:
+        break
+    # print(table_data)
+
+# convert lists into dataframe
+df = pd.DataFrame(table_data, columns=headings)
+# print(df)
+# convert into excel
+df.to_csv(r'C:\Users\bakta\Desktop\test cvs\UUMTestzone.csv', index=False)
+print("data have been converted to excel")
+
+
+# only part left is automation for the rest of options in dropdown menu n navigation of pages
+# suggestion/ideas
 # for looping https://stackoverflow.com/questions/58203002/scrape-table-from-each-option-in-drop-down-menu-python can
 # use some of the algo like data['stat]=i etc so we can store the value first then call them as index however for the
 # cities it will be hard to get all the index - need to get state by state for the table length we can scrap href
