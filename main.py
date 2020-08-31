@@ -27,7 +27,7 @@ login_btn = driver.find_element_by_name("B1").submit()
 # put the thread to sleep for 10 sec, will improve to wait until btn is available to click.
 time.sleep(10)
 # driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-
+close_pop = driver.find_element_by_xpath("/html/body/form/div[6]/div[3]/div/div[1]/img").click()
 academic_btn = driver.find_element_by_id("btn-academic").click()
 practicum_placement = driver.find_element_by_link_text("Practicum Placement").click()
 
